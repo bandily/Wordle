@@ -1,18 +1,58 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, SafeAreaView } from 'react-native';
-import { colors } from "./src/constants"; 
+import { colors, CLEAR, ENTER } from "./src/constants"; 
 import Keyboard from './src/components/Keyboard';
+import { useState } from 'react';
 
 const attempts = 6;
+
+const copyArray = (arr) => {
+  return [...arr.map((rows) => [...rows])]
+}
 
 export default function App() {
 
   const word = "hello";
   const letters = word.split("");
 
-  const rows = new Array(attempts).fill(
-    new Array(letters.length).fill("")
-  );
+  const [rows, setRows] = useState(
+    new Array(attempts).fill(new Array(letters.length).fill(""))
+    );
+
+  const [currentRow, setCurrentRow] = useState(0);
+  const [currentCol, setCurrentCol] = useState(0);
+
+  const onKeyPressed = (key) => {
+    const updatedRows = copyArray(rows);
+
+    if (key === CLEAR) {
+      const prevCol = currentCol - 1;
+      if (prevCol > 0) {
+        updatedRows[currentRow][prevCol] = "";
+        setRows(updatedRows);
+        setCurrentCol(prevCol);
+      }
+      return;
+    }
+
+    if (key === ENTER) {
+      if(currentCol === rows[0].length) {
+        setCurrentRow(currentRow + 1);
+        setCurrentCol(0);
+      }
+      return;
+    }
+
+    if (currentCol < rows[0].length) {
+      updatedRows[currentRow][currentCol] = key;
+      setRows(updatedRows);
+      setCurrentCol(currentCol + 1);
+    }
+  };
+
+  const isCellActive = (row, col) => {
+    return row === currentRow && col == currentCol;
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -21,10 +61,20 @@ export default function App() {
       <Text style={styles.title}>WORDLE</Text>
 
       <View style={styles.map}>
-        {rows.map((row) => (
-          <View style={styles.row}>
-            {row.map((cell) => (
-              <View style={styles.cell}>
+        {rows.map((row, i) => (
+          <View key={`row-${i}`} style={styles.row}>
+            {row.map((cell, j) => (
+              <View 
+                key={`cell-${i}-${j}`}
+                style={[
+                  styles.cell,
+                  {
+                    borderColor: isCellActive(i, j)
+                    ? colors.lightgrey
+                    : colors.darkgrey
+                  },
+                ]}
+              >
                 <Text style={styles.cellText}>{cell.toUpperCase()}</Text>
                 </View>
             ))}
@@ -32,7 +82,7 @@ export default function App() {
         ))}
       </View>
 
-      <Keyboard />
+      <Keyboard onKeyPressed={onKeyPressed}/>
     </SafeAreaView>
   );
 }
