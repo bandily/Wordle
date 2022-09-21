@@ -27,7 +27,7 @@ export default function App() {
 
     if (key === CLEAR) {
       const prevCol = currentCol - 1;
-      if (prevCol > 0) {
+      if (prevCol >= 0) {
         updatedRows[currentRow][prevCol] = "";
         setRows(updatedRows);
         setCurrentCol(prevCol);
@@ -40,6 +40,7 @@ export default function App() {
         setCurrentRow(currentRow + 1);
         setCurrentCol(0);
       }
+
       return;
     }
 
@@ -54,6 +55,30 @@ export default function App() {
     return row === currentRow && col == currentCol;
   }
 
+  const getCellBGColor = (row, col) => {
+    const letter = rows[row][col];
+    if (row >= currentRow) {
+      return colors.black;
+    }
+    if (letter === letters[col]) {
+      return colors.primary;
+    }
+    if (letters.includes(letter)) {
+      return colors.secondary;
+    }
+    return colors.darkgrey;
+  }
+
+  const getAllLettersWithColor = (color) => {
+    return rows.flatMap((row, i) => 
+    row.filter((cell,j) => getCellBGColor(i, j) === color)
+    );
+  }
+
+  const greenCaps = getAllLettersWithColor(colors.primary);
+  const yellowCaps = getAllLettersWithColor(colors.secondary);
+  const greyCaps = getAllLettersWithColor(colors.darkgrey);
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
@@ -63,7 +88,7 @@ export default function App() {
       <View style={styles.map}>
         {rows.map((row, i) => (
           <View key={`row-${i}`} style={styles.row}>
-            {row.map((cell, j) => (
+            {row.map((letter, j) => (
               <View 
                 key={`cell-${i}-${j}`}
                 style={[
@@ -71,18 +96,24 @@ export default function App() {
                   {
                     borderColor: isCellActive(i, j)
                     ? colors.lightgrey
-                    : colors.darkgrey
+                    : colors.darkgrey,
+                    backgroundColor: getCellBGColor(i , j),
                   },
                 ]}
               >
-                <Text style={styles.cellText}>{cell.toUpperCase()}</Text>
+                <Text style={styles.cellText}>{letter.toUpperCase()}</Text>
                 </View>
             ))}
             </View>
         ))}
       </View>
 
-      <Keyboard onKeyPressed={onKeyPressed}/>
+      <Keyboard 
+        onKeyPressed={onKeyPressed}
+        greenCaps={greenCaps}
+        yellowCaps={yellowCaps}
+        greyCaps={greenCaps}
+      />
     </SafeAreaView>
   );
 }
@@ -104,7 +135,6 @@ const styles = StyleSheet.create({
   map: {
     alignSelf: "stretch",
     marginVertical: 20,
-    height: 100,
   },
 
   row: {
