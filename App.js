@@ -1,8 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, SafeAreaView, Alert } from 'react-native';
-import { colors, CLEAR, ENTER } from "./src/constants"; 
+import { colors, CLEAR, ENTER, colorsToEmoji } from "./src/constants"; 
 import Keyboard from './src/components/Keyboard';
 import { useEffect, useState } from 'react';
+import * as Clipboard from 'expo-clipboard'
 
 const attempts = 6;
 
@@ -30,13 +31,26 @@ export default function App() {
   }, [currentRow])
 
   const checkGameState = () => {
-    if(checkIfWon()) {
-      Alert.alert('Huraaat', 'You Won!')
+    if(checkIfWon() && gameState !== 'won') {
+      Alert.alert('Huraaat', 'You Won!', [{ text: 'Share', onPress: shareScore}])
       setGameState('won')
-    }else if (checkIfLost()) {
+    }else if (checkIfLost() && gameState !== 'lost') {
       Alert.alert('Meh', 'Try again tomorrow!')
       setGameState('lost')
     }
+  }
+
+  const shareScore = () => {
+    const textMap = rows
+      .map((row, i) => 
+        row.map((cell, j) => colorsToEmoji[getCellBGColor(i, j)]).join("")
+      )
+      .filter((row) => row)
+      .join("\n");
+    const textToShare = `Wordle \n ${textMap}`;
+    Clipboard.setString(textToShare)
+    Alert.alert('Copied successfully', 'Share your score')
+      
   }
 
   const checkIfWon = () => {
@@ -46,7 +60,7 @@ export default function App() {
   }
 
   const checkIfLost = () => {
-    return currentRow === rows.length;
+    return checkIfWon() && currentRow === rows.length;
   }
 
   const onKeyPressed = (key) => {
@@ -88,6 +102,7 @@ export default function App() {
 
   const getCellBGColor = (row, col) => {
     const letter = rows[row][col];
+
     if (row >= currentRow) {
       return colors.black;
     }
@@ -97,12 +112,12 @@ export default function App() {
     if (letters.includes(letter)) {
       return colors.secondary;
     }
-      return colors.darkgrey;
+    return colors.darkgrey;
   }
 
   const getAllLettersWithColor = (color) => {
     return rows.flatMap((row, i) => 
-    row.filter((cell,j) => getCellBGColor(i, j) === color)
+    row.filter((cell, j) => getCellBGColor(i, j) === color)
     );
   }
 
@@ -143,7 +158,7 @@ export default function App() {
         onKeyPressed={onKeyPressed}
         greenCaps={greenCaps}
         yellowCaps={yellowCaps}
-        greyCaps={greenCaps}
+        greyCaps={greyCaps}
       />
     </SafeAreaView>
   );
