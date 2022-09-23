@@ -1,8 +1,8 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, SafeAreaView } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, Alert } from 'react-native';
 import { colors, CLEAR, ENTER } from "./src/constants"; 
 import Keyboard from './src/components/Keyboard';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const attempts = 6;
 
@@ -21,8 +21,39 @@ export default function App() {
 
   const [currentRow, setCurrentRow] = useState(0);
   const [currentCol, setCurrentCol] = useState(0);
+  const [gameState, setGameState] = useState('playing');
+
+  useEffect(() => {
+    if (currentRow > 0) {
+      checkGameState();
+    }
+  }, [currentRow])
+
+  const checkGameState = () => {
+    if(checkIfWon()) {
+      Alert.alert('Huraaat', 'You Won!')
+      setGameState('won')
+    }else if (checkIfLost()) {
+      Alert.alert('Meh', 'Try again tomorrow!')
+      setGameState('lost')
+    }
+  }
+
+  const checkIfWon = () => {
+    const row = rows[currentRow - 1];
+
+    return row.every((letter, i) => letter === letters[i])
+  }
+
+  const checkIfLost = () => {
+    return currentRow === rows.length;
+  }
 
   const onKeyPressed = (key) => {
+    if (gameState !== 'playing') {
+      return;
+    }
+
     const updatedRows = copyArray(rows);
 
     if (key === CLEAR) {
@@ -66,7 +97,7 @@ export default function App() {
     if (letters.includes(letter)) {
       return colors.secondary;
     }
-    return colors.darkgrey;
+      return colors.darkgrey;
   }
 
   const getAllLettersWithColor = (color) => {
@@ -79,7 +110,7 @@ export default function App() {
   const yellowCaps = getAllLettersWithColor(colors.secondary);
   const greyCaps = getAllLettersWithColor(colors.darkgrey);
 
-  return (
+    return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
 
