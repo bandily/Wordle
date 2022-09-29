@@ -1,28 +1,20 @@
-import { StyleSheet, Text, View, Alert } from 'react-native';
+import { Text, View, Alert, ActivityIndicator } from 'react-native';
 import { colors, CLEAR, ENTER, colorsToEmoji } from "../../constants"; 
 import Keyboard from '../Keyboard';
 import { useEffect, useState } from 'react';
 import * as Clipboard from 'expo-clipboard'
 import words from '../../Words'
+import styles from './Styles';
+import { copyArray, getDayOfTheYear, getDayKey } from '../../Util';
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const attempts = 6;
 
-const copyArray = (arr) => {
-  return [...arr.map((rows) => [...rows])]
-};
-
-const getDayOfTheYear = () => {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 0);
-  const diff = now - start;
-  const oneDay = 1000 * 60 * 60 * 24;
-  const day = Math.floor(diff / oneDay);
-  return day;
-};
-
 const dayOfTheYear = getDayOfTheYear();
+const dayKey = getDayKey();
 
 const Game = () => {
+  // AsyncStorage.removeItem("@game");
   const word = words[dayOfTheYear];
   const letters = word.split("");
 
@@ -33,12 +25,60 @@ const Game = () => {
   const [currentRow, setCurrentRow] = useState(0);
   const [currentCol, setCurrentCol] = useState(0);
   const [gameState, setGameState] = useState('playing');
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     if (currentRow > 0) {
       checkGameState();
     }
   }, [currentRow])
+
+  useEffect(() => {
+    if (loaded) {
+      persistState();
+    }
+  }, [rows, currentRow, currentCol, gameState])
+
+  useEffect(() => {
+    readState()
+  }, [])
+
+  const persistState = async () => {
+    const dataForToday = {
+      rows, 
+      currentRow,
+      currentCol,
+      gameState,
+    }
+
+    try {
+      const existingStateString = await AsyncStorage.getItem("@game")
+      const existingState = existingStateString ? JSON.parse(existingStateString) : {};
+
+      existingState[dayKey] = dataForToday
+
+      const dataString = JSON.stringify(existingState);
+      await AsyncStorage.setItem('@game', dataString);
+    }catch (e) {
+      console.log("Failed to write", e)
+    }
+  }
+
+  const readState = async () => {
+    const dataString = await AsyncStorage.getItem('@game');
+    try {
+      const data = JSON.parse(dataString);
+      day = data[dayKey]
+      setRows(day.rows);
+      setCurrentCol(day.currentCol);
+      setCurrentRow(day.currentRow);
+      setGameState(day.gameState)
+    } catch(e) {
+      console.log("Could not parse")
+    }
+
+    setLoaded(true);
+  }
 
   const checkGameState = () => {
     if(checkIfWon() && gameState !== 'won') {
@@ -135,6 +175,10 @@ const Game = () => {
   const yellowCaps = getAllLettersWithColor(colors.secondary);
   const greyCaps = getAllLettersWithColor(colors.darkgrey);
 
+  if (!loaded) {
+    return (<ActivityIndicator />)
+  }
+
     return (
     <>
       <View style={styles.map}>
@@ -169,35 +213,5 @@ const Game = () => {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  map: {
-    alignSelf: "stretch",
-    marginVertical: 20,
-  },
-
-  row: {
-    alignSelf: "stretch",
-    flexDirection: "row",
-    justifyContent: "center",
-  },
-
-  cell: {
-    borderWidth: 3,
-    borderColor: colors.grey,
-    flex: 1,
-    maxWidth: 70,
-    aspectRatio: 1,
-    margin: 3,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  cellText: {
-    color: colors.lightgrey,
-    fontWeight: "bold",
-    fontSize: 28,
-  },
-});
 
 export default Game
