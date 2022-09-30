@@ -7,6 +7,7 @@ import words from '../../Words'
 import styles from './Styles';
 import { copyArray, getDayOfTheYear, getDayKey } from '../../Util';
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import EndScreen from '../EndScreen';
 
 const attempts = 6;
 
@@ -14,7 +15,7 @@ const dayOfTheYear = getDayOfTheYear();
 const dayKey = getDayKey();
 
 const Game = () => {
-  // AsyncStorage.removeItem("@game");
+  AsyncStorage.removeItem("@game");
   const word = words[dayOfTheYear];
   const letters = word.split("");
 
@@ -65,15 +66,15 @@ const Game = () => {
   }
 
   const readState = async () => {
-    const dataString = await AsyncStorage.getItem('@game');
+    const dataString = await AsyncStorage.getItem("@game");
     try {
       const data = JSON.parse(dataString);
-      day = data[dayKey]
+      const day = data[dayKey]
       setRows(day.rows);
       setCurrentCol(day.currentCol);
       setCurrentRow(day.currentRow);
       setGameState(day.gameState)
-    } catch(e) {
+    } catch (e) {
       console.log("Could not parse")
     }
 
@@ -82,7 +83,7 @@ const Game = () => {
 
   const checkGameState = () => {
     if(checkIfWon() && gameState !== 'won') {
-      Alert.alert('Huraaat', 'You Won!', [{ text: 'Share', onPress: shareScore}])
+      Alert.alert('Huraaay', 'You Won!', [{ text: 'Share', onPress: shareScore}])
       setGameState('won')
     }else if (checkIfLost() && gameState !== 'lost') {
       Alert.alert('Meh', 'Try again tomorrow!')
@@ -177,6 +178,10 @@ const Game = () => {
 
   if (!loaded) {
     return (<ActivityIndicator />)
+  }
+
+  if (gameState !== 'playing') {
+    return (<EndScreen won={gameState === 'won'} />)
   }
 
     return (
