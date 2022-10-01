@@ -67,9 +67,10 @@ const Game = () => {
 
   const readState = async () => {
     const dataString = await AsyncStorage.getItem("@game");
+    console.log(dataString);
     try {
       const data = JSON.parse(dataString);
-      const day = data[dayKey]
+      const day = data[dayKey];
       setRows(day.rows);
       setCurrentCol(day.currentCol);
       setCurrentRow(day.currentRow);
@@ -83,8 +84,8 @@ const Game = () => {
 
   const checkGameState = () => {
     if(checkIfWon() && gameState !== 'won') {
-      Alert.alert('Huraaay', 'You Won!', [{ text: 'Share', onPress: shareScore}])
-      setGameState('won')
+      Alert.alert('Huraaay', 'You Won!', [{ text: 'Share', onPress: shareScore}]);
+      setGameState('won');
     }else if (checkIfLost() && gameState !== 'lost') {
       Alert.alert('Meh', 'Try again tomorrow!')
       setGameState('lost')
@@ -111,7 +112,7 @@ const Game = () => {
   }
 
   const checkIfLost = () => {
-    return checkIfWon() && currentRow === rows.length;
+    return !checkIfWon() && currentRow === rows.length;
   }
 
   const onKeyPressed = (key) => {
