@@ -14,7 +14,7 @@ const dayOfTheYear = getDayOfTheYear();
 const dayKey = getDayKey();
 
 const Game = () => {
-  AsyncStorage.removeItem("@game");
+  // AsyncStorage.removeItem("@game");
   const word = words[dayOfTheYear];
   const letters = word.split("");
 
@@ -66,16 +66,15 @@ const Game = () => {
 
   const readState = async () => {
     const dataString = await AsyncStorage.getItem("@game");
-    console.log(dataString);
     try {
       const data = JSON.parse(dataString);
-      const day = data[dayKey];
+      const day = data[dataKey];
       setRows(day.rows);
       setCurrentCol(day.currentCol);
       setCurrentRow(day.currentRow);
-      setGameState(day.gameState)
+      setGameState(day.gameState);
     } catch (e) {
-      console.log("Could not parse")
+      console.log("could not parse")
     }
 
     setLoaded(true);
