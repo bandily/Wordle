@@ -2,7 +2,6 @@ import { Text, View, Alert, ActivityIndicator } from 'react-native';
 import { colors, CLEAR, ENTER, colorsToEmoji } from "../../constants"; 
 import Keyboard from '../Keyboard';
 import { useEffect, useState } from 'react';
-import * as Clipboard from 'expo-clipboard'
 import words from '../../Words'
 import styles from './Styles';
 import { copyArray, getDayOfTheYear, getDayKey } from '../../Util';
@@ -84,25 +83,10 @@ const Game = () => {
 
   const checkGameState = () => {
     if(checkIfWon() && gameState !== 'won') {
-      Alert.alert('Huraaay', 'You Won!', [{ text: 'Share', onPress: shareScore}]);
       setGameState('won');
     }else if (checkIfLost() && gameState !== 'lost') {
-      Alert.alert('Meh', 'Try again tomorrow!')
       setGameState('lost')
     }
-  }
-
-  const shareScore = () => {
-    const textMap = rows
-      .map((row, i) => 
-        row.map((cell, j) => colorsToEmoji[getCellBGColor(i, j)]).join("")
-      )
-      .filter((row) => row)
-      .join("\n");
-    const textToShare = `Wordle \n ${textMap}`;
-    Clipboard.setString(textToShare)
-    Alert.alert('Copied successfully', 'Share your score')
-      
   }
 
   const checkIfWon = () => {
@@ -182,7 +166,7 @@ const Game = () => {
   }
 
   if (gameState !== 'playing') {
-    return (<EndScreen won={gameState === 'won'} />)
+    return (<EndScreen won={gameState === 'won'} rows={rows} getCellBGColor={getCellBGColor}/>)
   }
 
     return (
