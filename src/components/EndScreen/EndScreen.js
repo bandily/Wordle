@@ -35,7 +35,7 @@ const GuessDistributionLine = ({position, amount, percentage}) => {
     )
 }
 
-const GetDistribution = ({ distribution }) => {
+const GuessDistribution = ({ distribution }) => {
     if(!distribution) {
         return null;
     }
@@ -47,7 +47,7 @@ const GetDistribution = ({ distribution }) => {
         <Text style={styles.subtitle}>GUESS DISTRIBUTION</Text>
         <View style={{width: "100%", padding: 20}}>
             {distribution.map((dist, index) => (
-                <GuessDistributionLine position={index + 1} amount={dist} percentage={(100 * dist) / sum}/>
+                <GuessDistributionLine key={index} position={index + 1} amount={dist} percentage={(100 * dist) / sum}/>
             ))}
         </View>
         </>
@@ -165,7 +165,7 @@ const EndScreen = ({won = false, rows, getCellBGColor}) => {
                 <Number number={curStreak} label={"Cur Streak"} />
                 <Number number={maxStreak} label={"Max Streak"} />
             </View>
-            <GetDistribution distribution={distribution}/>
+            <GuessDistribution distribution={distribution}/>
 
             <View style={{flexDirection: "row", padding: 10}}>
                 <View style={{alignItems: "center", flex: 1}}>

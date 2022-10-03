@@ -14,7 +14,8 @@
     "react": "18.0.0",
     "react-native": "0.69.6",
     "expo-clipboard": "~3.1.0",
-    "@react-native-async-storage/async-storage": "~1.17.3"
+    "@react-native-async-storage/async-storage": "~1.17.3",
+    "react-native-reanimated": "~2.9.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9"
