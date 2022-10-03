@@ -26,7 +26,8 @@ const GuessDistributionLine = ({position, amount, percentage}) => {
                 backgroundColor: colors.grey, 
                 margin: 5, 
                 padding: 5, 
-                width: `${percentage}%`
+                width: `${percentage}%`,
+                minWidth: 20,
                 }}>
                 <Text style={{color: colors.lightgrey }}>{amount}</Text>
             </View>
@@ -34,17 +35,24 @@ const GuessDistributionLine = ({position, amount, percentage}) => {
     )
 }
 
-const GetDistribution = () => {
-return (
-    <>
-    <Text style={styles.subtitle}>GUESS DISTRIBUTION</Text>
-    <View style={{width: "100%", padding: 20}}>
-        <GuessDistributionLine position={0} amount={2} percentage={50}/>
-        <GuessDistributionLine position={3} amount={2} percentage={50}/>
-    </View>
-    </>
-)
-}
+const GetDistribution = ({ distribution }) => {
+    if(!distribution) {
+        return null;
+    }
+    const sum = distribution.reduce((total, dist) => (dist + total), 0)
+
+
+    return (
+        <>
+        <Text style={styles.subtitle}>GUESS DISTRIBUTION</Text>
+        <View style={{width: "100%", padding: 20}}>
+            {distribution.map((dist, index) => (
+                <GuessDistributionLine position={index + 1} amount={dist} percentage={(100 * dist) / sum}/>
+            ))}
+        </View>
+        </>
+    )
+    }
 
 const EndScreen = ({won = false, rows, getCellBGColor}) => {
     const [secondsTillTomorrow, setSecondsTillTomorrow] = useState(0)
@@ -52,6 +60,7 @@ const EndScreen = ({won = false, rows, getCellBGColor}) => {
     const [winRate, setWinRate] = useState(0);
     const [curStreak, setCurStreak] = useState(0);
     const [maxStreak, setMaxStreak] = useState(0);
+    const [distribution, setDistribution] = useState(null);
 
     useEffect(() => {
         readState();
@@ -121,6 +130,17 @@ const EndScreen = ({won = false, rows, getCellBGColor}) => {
         })
         setCurStreak(_curStreak);
         setMaxStreak(maxStreak);
+
+        //guess distribution
+        const dist = [0, 0, 0, 0, 0, 0];
+
+        values.map((game) => {
+            if (game.gameState === "won") {
+                const tries = game.rows.filter((row) => row[0]).length;
+                dist[tries] = dist[tries] + 1;
+            }
+        })
+        setDistribution(dist);
     }
 
     const formatSeconds = () => {
@@ -145,7 +165,7 @@ const EndScreen = ({won = false, rows, getCellBGColor}) => {
                 <Number number={curStreak} label={"Cur Streak"} />
                 <Number number={maxStreak} label={"Max Streak"} />
             </View>
-            <GetDistribution />
+            <GetDistribution distribution={distribution}/>
 
             <View style={{flexDirection: "row", padding: 10}}>
                 <View style={{alignItems: "center", flex: 1}}>
